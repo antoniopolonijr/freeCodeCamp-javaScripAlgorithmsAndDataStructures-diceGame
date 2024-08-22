@@ -2,6 +2,7 @@
 
 const listOfAllDice = document.querySelectorAll(".die"); // Get all of your .die elements and assign them to a listOfAllDice variable
 const scoreInputs = document.querySelectorAll("#score-options input"); //  Get your score inputs (the input elements in your #score-options)
+
 const scoreSpans = document.querySelectorAll("#score-options span");
 const roundElement = document.getElementById("current-round");
 const rollsElement = document.getElementById("current-round-rolls");
@@ -44,6 +45,69 @@ const updateStats = () => {
   roundElement.textContent = round; // update round on the page
 };
 
+// Each time you roll the dice, you could end up with a Three of a kind, Four of a kind, Full house, Straight or a random combination of numbers. Based on the outcome, you can make a selection and add points to your score.
+const updateRadioOption = (index, score) => {
+  scoreInputs[index].disabled = false; // set the scoreInputs at that index to be enabled
+  scoreInputs[index].value = score; // set the value of that input to the score
+  scoreSpans[index].textContent = `, score = ${score}`;
+};
+
+// function to add score to total and history
+const updateScore = (selectedValue, achieved) => {
+  score += parseInt(selectedValue);
+  totalScoreElement.textContent = score;
+  scoreHistory.innerHTML += `<li>${achieved} : ${selectedValue}</li>`;
+};
+
+// If you roll the dice and get a Three of a kind or Four of a kind, then you can get a score totalling the sum of all five dice values. To calculate this, create a getHighestDuplicates function which takes an array of numbers. The function will need to count how many times each number is found in the array.
+const getHighestDuplicates = (arr) => {
+  let counts = {}; // To store the count of each number in the array
+
+  // Count occurrences of each number in the array
+  arr.forEach((num) => {
+    counts[num] = (counts[num] || 0) + 1;
+  });
+
+  // Determine the sum of all dice
+  const totalSum = arr.reduce((sum, num) => sum + num, 0);
+
+  // Variables to track the highest duplicates
+  let hasFourOfAKind = false;
+  let hasThreeOfAKind = false;
+
+  // Iterate through the counts to find the highest duplicates
+  for (let num in counts) {
+    if (counts[num] >= 4) {
+      hasFourOfAKind = true;
+    }
+    if (counts[num] >= 3) {
+      hasThreeOfAKind = true;
+    }
+  }
+
+  // Update the scoring options
+  if (hasFourOfAKind) {
+    updateRadioOption(1, totalSum);
+    updateRadioOption(0, totalSum);
+  } else if (hasThreeOfAKind) {
+    updateRadioOption(0, totalSum);
+  } else {
+    updateRadioOption(5, 0);
+  }
+};
+
+// Before each dice roll, you will need to reset the values for the score inputs and spans so a new value can be displayed.
+const resetRadioOptions = () => {
+  for (let index = 0; index < scoreInputs.length; index++) {
+    // iterate through the scoreInputs
+    scoreInputs[index].disabled = true; // disable them
+    scoreInputs[index].checked = false; // remove the checked attribute
+  }
+  for (let index = 0; index < scoreSpans.length; index++) {
+    scoreSpans[index].textContent = ``; // remove the text from each of the scoreSpans
+  }
+};
+
 // When the user clicks on the Roll the dice button, five random die numbers should be generated and displayed on the screen.
 // For each round in the game, users are allowed to roll the dice a maximum of three times
 rollDiceBtn.addEventListener("click", () => {
@@ -51,9 +115,11 @@ rollDiceBtn.addEventListener("click", () => {
     // If a user clicks the rollDiceBtn but has already made three rolls
     alert("You have made three rolls this round. Please select a score.");
   } else {
+    resetRadioOptions(); // Before each dice roll, you will need to reset the values for the score inputs and spans so a new value can be displayed.
     rolls++; // increment the rolls variable.
     rollDice();
     updateStats();
+    getHighestDuplicates(diceValuesArr);
   }
 });
 
@@ -62,4 +128,27 @@ rulesBtn.addEventListener("click", () => {
   isModalShowing = !isModalShowing; // invert the value of a boolean.
   rulesContainer.style.display = isModalShowing ? "block" : "none"; // show or hide the cart
   rulesBtn.textContent = isModalShowing ? "Hide rules" : "Show rules"; // change the buttom text
+});
+
+keepScoreBtn.addEventListener("click", () => {
+  // Find the selected radio option
+  const selectedRadio = document.querySelector("#score-options input:checked");
+
+  // Check if a radio option is selected
+  if (selectedRadio) {
+    // Capture the value and id of the selected option
+    const selectedValue = selectedRadio.value;
+    const achieved = selectedRadio.id;
+
+    // Reset rolls, increment round, and update the score
+    rolls = 0;
+    round++;
+    updateScore(selectedValue, achieved);
+
+    // Reset the radio options (disable or uncheck them)
+    resetRadioOptions();
+  } else {
+    // If no option is selected, alert the user to select an option
+    alert("Please select an option before proceeding to the next round.");
+  }
 });
