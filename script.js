@@ -33,11 +33,10 @@ const rollDice = () => {
     diceValuesArr.push(randomValue); // these numbers are pushed into the diceValuesArr.
   }
 
-  // Display the numbers in order in the listOfAllDice elements
-  diceValuesArr.sort((a, b) => a - b); // The diceValuesArr is sorted in ascending order
+  // Display the numbers the listOfAllDice elements
   listOfAllDice.forEach((element, index) => {
     element.textContent = diceValuesArr[index];
-  }); // The listOfAllDice elements are updated with the sorted values from diceValuesArr. The forEach loop iterates through these elements and sets their textContent to the corresponding value.
+  }); // The listOfAllDice elements are updated from diceValuesArr. The forEach loop iterates through these elements and sets their textContent to the corresponding value.
 };
 
 const updateStats = () => {
@@ -156,6 +155,33 @@ const resetGame = () => {
   resetRadioOptions();
 };
 
+// Function to check for small and large straights. A small straight is when four of the dice have consecutive values in any order (Ex. 1234) resulting in a score of 30 points. A large straight is when all five dice have consecutive values in any order (Ex. 12345) resulting in a score of 40 points.
+const checkForStraights = (arr) => {
+  // Create a sorted set of unique values from the dice array
+  const sortedUniqueArr = [...new Set(arr)].sort((a, b) => a - b);
+
+  // Convert the sorted array to a string to match patterns
+  const sortedStr = sortedUniqueArr.join("");
+
+  // Define patterns for small and large straights
+  const smallStraights = ["1234", "2345", "3456"];
+  const largeStraight = ["12345", "23456"];
+
+  // Check for a large straight
+  if (largeStraight.some((straight) => sortedStr.includes(straight))) {
+    updateRadioOption(3, 30); // Update the 4th radio button with a score of 30
+    updateRadioOption(4, 40); // Update the 5th radio button with a score of 40
+  }
+  // Check for a small straight
+  else if (smallStraights.some((straight) => sortedStr.includes(straight))) {
+    updateRadioOption(3, 30); // Update the 4th radio button with a score of 30
+  }
+  // If no straight is found, set the score to 0
+  else {
+    updateRadioOption(5, 0); // Update the last radio button with a score of 0
+  }
+};
+
 // When the user clicks on the Roll the dice button, five random die numbers should be generated and displayed on the screen.
 // For each round in the game, users are allowed to roll the dice a maximum of three times
 rollDiceBtn.addEventListener("click", () => {
@@ -169,6 +195,7 @@ rollDiceBtn.addEventListener("click", () => {
     updateStats();
     getHighestDuplicates(diceValuesArr);
     detectFullHouse(diceValuesArr);
+    checkForStraights(diceValuesArr);
   }
 });
 
