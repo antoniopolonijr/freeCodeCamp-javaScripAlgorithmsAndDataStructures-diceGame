@@ -96,6 +96,35 @@ const getHighestDuplicates = (arr) => {
   }
 };
 
+// If the user rolls three of one number, and two of another number, this is called a full house.
+const detectFullHouse = (arr) => {
+  let counts = {}; // To store the count of each number in the array
+
+  // Count occurrences of each number in the array
+  arr.forEach((num) => {
+    counts[num] = (counts[num] || 0) + 1;
+  });
+
+  // Variables to track the duplicates
+  let hasTwoOfAKind = false;
+  let hasThreeOfAKind = false;
+
+  // Check if counts has 3 and 2 of each number
+  if (Object.values(counts).includes(3)) {
+    hasThreeOfAKind = true;
+  }
+  if (Object.values(counts).includes(2)) {
+    hasTwoOfAKind = true;
+  }
+
+  // Update the scoring options
+  if (hasThreeOfAKind && hasTwoOfAKind) {
+    updateRadioOption(2, 25);
+  } else {
+    updateRadioOption(5, 0);
+  }
+};
+
 // Before each dice roll, you will need to reset the values for the score inputs and spans so a new value can be displayed.
 const resetRadioOptions = () => {
   for (let index = 0; index < scoreInputs.length; index++) {
@@ -139,6 +168,7 @@ rollDiceBtn.addEventListener("click", () => {
     rollDice();
     updateStats();
     getHighestDuplicates(diceValuesArr);
+    detectFullHouse(diceValuesArr);
   }
 });
 
