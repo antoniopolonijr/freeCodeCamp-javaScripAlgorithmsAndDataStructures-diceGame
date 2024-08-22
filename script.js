@@ -108,6 +108,25 @@ const resetRadioOptions = () => {
   }
 };
 
+const resetGame = () => {
+  diceValuesArr = [0, 0, 0, 0, 0];
+  score = 0;
+  round = 1;
+  rolls = 0;
+
+  listOfAllDice.forEach((dice, index) => {
+    dice.textContent = diceValuesArr[index];
+  });
+
+  totalScoreElement.textContent = score;
+  scoreHistory.innerHTML = "";
+
+  rollsElement.textContent = rolls;
+  roundElement.textContent = round;
+
+  resetRadioOptions();
+};
+
 // When the user clicks on the Roll the dice button, five random die numbers should be generated and displayed on the screen.
 // For each round in the game, users are allowed to roll the dice a maximum of three times
 rollDiceBtn.addEventListener("click", () => {
@@ -147,6 +166,14 @@ keepScoreBtn.addEventListener("click", () => {
 
     // Reset the radio options (disable or uncheck them)
     resetRadioOptions();
+
+    // there should be a total of six rounds and then the game ends with the final score.
+    if (round > 6) {
+      setTimeout(() => {
+        alert(`Game Over! Your total score is ${score}`);
+        resetGame();
+      }, 500); // display an alert with the user's final score after 500 milliseconds.
+    }
   } else {
     // If no option is selected, alert the user to select an option
     alert("Please select an option before proceeding to the next round.");
